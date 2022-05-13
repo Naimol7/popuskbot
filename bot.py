@@ -1,4 +1,3 @@
-from unittest import skip
 from create_bot import bot, dp
 from aiogram.utils import executor
 
