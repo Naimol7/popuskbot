@@ -15,7 +15,7 @@ v1 = KeyboardButton(text='М')
 v2 = KeyboardButton(text='Ж')
 menu_kb.add(v1, v2)
 
-menu_kb2 = ReplyKeyboardMarkup(resize_keyboard=True)
+
 
 
 class SwimmingStates(StatesGroup):
@@ -45,6 +45,7 @@ async def sex(message: types.Message, state: FSMContext):
         r = requests.get(url=f'http://{IP}:5000/getstyles')
         styles_list = json.loads(r.text)
         print([i['name'] for i in styles_list])
+        menu_kb2 = ReplyKeyboardMarkup(resize_keyboard=True)
         menu_kb2.add(*[i['name'] for i in styles_list] )
         await message.answer('Введите стиль', reply_markup=menu_kb2)
         await SwimmingStates.waitingStyle.set()
@@ -64,14 +65,16 @@ async def style(message: types.Message, state: FSMContext):
         
 async def distance(message: types.Message, state: FSMContext):
     await state.update_data(distance=message.text)
-    await message.answer('введите время')
+    await message.answer('введите время в формате мм.сс.млмл')
     await SwimmingStates.waitingTime.set()
 
 async def time(message: types.Message, state: FSMContext):
     await state.update_data(time=message.text)
     user_data = await state.get_data()
     print(user_data)
-    await message.answer(sex, style, distance)
+    r = requests.post(url=f'http://{IP}:5000/calculate', json=json.dumps(user_data))
+    data = json.loads(r.text)
+    await message.answer('Количество очков:'+str(data['score']))
     
 
 def register_by_swimming_handlers(dp: Dispatcher):
